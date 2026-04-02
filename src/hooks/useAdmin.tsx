@@ -6,43 +6,16 @@ export const useAdmin = (userId: string | undefined) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-
-    const checkAdmin = async () => {
-      try {
-        // Check user_roles table
-        const { data, error } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", userId)
-          .eq("role", "admin");
-
-        if (error) {
-          console.error("Error checking admin role:", error.message);
-        }
-
-        const hasAdminRole = !error && (data?.length ?? 0) > 0;
-
-        if (hasAdminRole) {
-          setIsAdmin(true);
-        } else {
-          // Fallback: check current user's email
-          const { data: { user } } = await supabase.auth.getUser();
-          const isAdminViaEmail = user?.email?.toLowerCase().includes("admin");
-          setIsAdmin(isAdminViaEmail ?? false);
-        }
-      } catch (err) {
-        console.error("Error in admin check:", err);
-        setIsAdmin(false);
-      } finally {
+    if (!userId) { setLoading(false); return; }
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .then(({ data }) => {
+        setIsAdmin((data?.length ?? 0) > 0);
         setLoading(false);
-      }
-    };
-
-    checkAdmin();
+      });
   }, [userId]);
 
   return { isAdmin, loading };
