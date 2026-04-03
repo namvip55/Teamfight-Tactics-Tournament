@@ -17,9 +17,27 @@ import { useAdmin } from "@/hooks/useAdmin";
 const Index = () => {
   const [activeTab, setActiveTab] = useState("attendance");
   const { user, loading: authLoading, signOut } = useAuth();
-  const { profile, loading: profileLoading, refetchProfile } = useProfile(user?.id);
-  const { streak, totalCheckins, hasCheckedIn, checkIn, loading: checkinsLoading } = useCheckins(user?.id);
-  const { isAdmin } = useAdmin(user?.id);
+  const {
+    profile,
+    loading: profileLoading,
+    refetchProfile,
+  } = useProfile(user?.id);
+  const {
+    streak,
+    totalCheckins,
+    hasCheckedIn,
+    checkIn,
+    loading: checkinsLoading,
+  } = useCheckins(user?.id);
+  const { isAdmin, loading: adminLoading } = useAdmin(user?.id);
+
+  console.log("🏠 Index: Current state:", {
+    userId: user?.id,
+    userEmail: user?.email,
+    isAdmin,
+    adminLoading,
+    authLoading,
+  });
 
   if (authLoading) {
     return (
@@ -33,7 +51,7 @@ const Index = () => {
     return <Navigate to="/auth" replace />;
   }
 
-  const isLoading = profileLoading || checkinsLoading;
+  const isLoading = profileLoading || checkinsLoading || adminLoading;
 
   const handleCheckIn = async () => {
     await checkIn();
@@ -75,7 +93,9 @@ const Index = () => {
 
             {activeTab === "shop" && <ShopContent />}
 
-            {activeTab === "tournament" && <TournamentContent isAdmin={isAdmin} />}
+            {activeTab === "tournament" && (
+              <TournamentContent isAdmin={isAdmin} />
+            )}
 
             {activeTab === "mail" && <MailContent />}
 
